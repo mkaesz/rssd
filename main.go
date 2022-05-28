@@ -17,6 +17,7 @@ import (
 )
 
 type feedItem struct {
+	Name string
 	Feed string
 	Last string
 }
@@ -75,11 +76,11 @@ func d(c string) {
 	}
 
 	if flag.Arg(0) == "add-feed" {
-		if len(flag.Args()) < 2 {
+		if len(flag.Args()) < 3 {
 			fmt.Fprintln(os.Stderr, "insufficient number of arguments")
 			os.Exit(2)
 		}
-		err := addFeed(c, flag.Arg(1))
+		err := addFeed(c, flag.Arg(1), flag.Arg(2))
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -228,10 +229,10 @@ func listFeed(p string) error {
 	}
 
 	t := tablewriter.NewWriter(os.Stdout)
-	t.SetHeader([]string{"Index", "Feed", "Last"})
+	t.SetHeader([]string{"Index", "Name", "Feed", "Last"})
 
 	for i, v := range s.Feeds {
-		t.Append([]string{fmt.Sprint(i), v.Feed, v.Last})
+		t.Append([]string{fmt.Sprint(i), v.Name, v.Feed, v.Last})
 	}
 
 	t.Render()
@@ -239,7 +240,7 @@ func listFeed(p string) error {
 	return nil
 }
 
-func addFeed(p string, feed string) error {
+func addFeed(p string, name string, feed string) error {
 	s, err := readConfig(p)
 	if err != nil {
 		return fmt.Errorf("addFeed -> %v", err)
@@ -260,7 +261,7 @@ func addFeed(p string, feed string) error {
 		return fmt.Errorf("addFeed -> %v", err)
 	}
 
-	s.Feeds = append(s.Feeds, feedItem{feed, f.Items[0].Link})
+	s.Feeds = append(s.Feeds, feedItem{name, feed, f.Items[0].Link})
 
 	err = writeConfig(p, s)
 	if err != nil {
